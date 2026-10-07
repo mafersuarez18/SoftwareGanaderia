@@ -57,10 +57,14 @@ export function crearApp(): Application {
   }));
 
   // Tope general por IP para toda la API, como primera línea de defensa
-  // contra abuso o bots.
+  // contra abuso o bots. 100 resultó demasiado ajustado para un uso normal:
+  // solo el polling de notificaciones (cada 30s) ya consume ~30 cada 15 min,
+  // y con varios usuarios detrás del mismo IP (oficina/finca) más los
+  // reintentos de la cola offline al recuperar señal, se agotaba con
+  // facilidad en una sesión de uso real, no solo en un ataque.
   const limitadorGlobal = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     message: { exito: false, mensaje: 'Demasiadas peticiones. Intente de nuevo en 15 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
