@@ -39,6 +39,15 @@ clienteHttp.interceptors.request.use(
     if (tokenAcceso && config.headers) {
       config.headers.Authorization = `Bearer ${tokenAcceso}`;
     }
+    // Si el dispositivo ya sabe que no tiene conexión, no tiene sentido
+    // esperar los 30s normales de timeout para recién ahí encolar el
+    // registro — eso es lo que hacía que el botón "Guardando..." pareciera
+    // trabado. Con la señal apagada, se corta casi de inmediato y el
+    // interceptor de respuesta lo encola igual (mismo camino de siempre,
+    // solo que mucho más rápido).
+    if (!navigator.onLine) {
+      config.timeout = 1500;
+    }
     return config;
   },
   (error) => Promise.reject(error)
